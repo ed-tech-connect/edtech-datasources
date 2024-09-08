@@ -79,77 +79,132 @@ func (r *MySQLRepository) FindMany(ctx context.Context, tableName string, builde
 	return totalCount, nil
 }
 
-func (r *MySQLRepository) UpdateOne(ctx context.Context, tableName string, qb *QueryBuilder) error {
+func (r *MySQLRepository) UpdateOne(ctx context.Context, tableName string, qb *QueryBuilder) (map[string]interface{}, error) {
 	query, args := qb.BuildUpdateQuery(tableName)
 
 	executor, err := r.getExecutor()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	_, err = executor.ExecContext(ctx, query, args...)
+	result, err := executor.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("error updating record: %w", err)
+		return nil, fmt.Errorf("error updating record: %w", err)
 	}
-	return nil
+
+	modifiedCount, err := result.RowsAffected()
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve modified count: %w", err)
+	}
+
+	response := map[string]interface{}{
+		"acknowledged":  true,
+		"modifiedCount": int(modifiedCount),
+	}
+
+	return response, nil
 }
 
-func (r *MySQLRepository) UpdateMany(ctx context.Context, tableName string, qb *QueryBuilder) error {
+func (r *MySQLRepository) UpdateMany(ctx context.Context, tableName string, qb *QueryBuilder) (map[string]interface{}, error) {
 	query, args := qb.BuildUpdateManyQuery(tableName)
 
 	executor, err := r.getExecutor()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	_, err = executor.ExecContext(ctx, query, args...)
+	result, err := executor.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("error updating records: %w", err)
+		return nil, fmt.Errorf("error updating records: %w", err)
 	}
-	return nil
+
+	modifiedCount, err := result.RowsAffected()
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve modified count: %w", err)
+	}
+
+	response := map[string]interface{}{
+		"acknowledged":  true,
+		"modifiedCount": int(modifiedCount),
+	}
+
+	return response, nil
 }
 
-func (r *MySQLRepository) InsertOne(ctx context.Context, tableName string, qb *QueryBuilder) error {
+func (r *MySQLRepository) InsertOne(ctx context.Context, tableName string, qb *QueryBuilder) (map[string]interface{}, error) {
 	query, args := qb.BuildInsertQuery(tableName)
 
 	executor, err := r.getExecutor()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	_, err = executor.ExecContext(ctx, query, args...)
+	result, err := executor.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("error inserting record: %w", err)
+		return nil, fmt.Errorf("error inserting record: %w", err)
 	}
-	return nil
+
+	insertedID, err := result.LastInsertId()
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve inserted ID: %w", err)
+	}
+
+	response := map[string]interface{}{
+		"acknowledged": true,
+		"insertedId":   int(insertedID),
+	}
+
+	return response, nil
 }
 
-func (r *MySQLRepository) DeleteOne(ctx context.Context, tableName string, qb *QueryBuilder) error {
+func (r *MySQLRepository) DeleteOne(ctx context.Context, tableName string, qb *QueryBuilder) (map[string]interface{}, error) {
 	query, args := qb.BuildDeleteQuery(tableName)
 
 	executor, err := r.getExecutor()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	_, err = executor.ExecContext(ctx, query, args...)
+	result, err := executor.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("error deleting record: %w", err)
+		return nil, fmt.Errorf("error deleting record: %w", err)
 	}
-	return nil
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve rows affected: %w", err)
+	}
+
+	response := map[string]interface{}{
+		"acknowledged": true,
+		"deletedCount": int(rowsAffected),
+	}
+
+	return response, nil
 }
 
-func (r *MySQLRepository) DeleteMany(ctx context.Context, tableName string, qb *QueryBuilder) error {
+func (r *MySQLRepository) DeleteMany(ctx context.Context, tableName string, qb *QueryBuilder) (map[string]interface{}, error) {
 	query, args := qb.BuildDeleteQuery(tableName)
 
 	executor, err := r.getExecutor()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	_, err = executor.ExecContext(ctx, query, args...)
+	result, err := executor.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("error deleting records: %w", err)
+		return nil, fmt.Errorf("error deleting records: %w", err)
 	}
-	return nil
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve rows affected: %w", err)
+	}
+
+	response := map[string]interface{}{
+		"acknowledged": true,
+		"deletedCount": int(rowsAffected),
+	}
+
+	return response, nil
 }

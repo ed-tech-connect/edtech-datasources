@@ -66,30 +66,48 @@ func (r *MongoRepository) FindMany(ctx context.Context, collectionName string, q
 	return int(totalCount), nil
 }
 
-func (r *MongoRepository) UpdateOne(ctx context.Context, collectionName string, qb *MongoQueryBuilder) error {
+func (r *MongoRepository) UpdateOne(ctx context.Context, collectionName string, qb *MongoQueryBuilder) (map[string]interface{}, error) {
 	if qb.update == nil {
-		return fmt.Errorf("update document must be specified")
+		return nil, fmt.Errorf("update document must be specified")
 	}
 
-	_, err := r.db.Collection(collectionName).UpdateOne(ctx, qb.filter, bson.M{"$set": qb.update})
+	result, err := r.db.Collection(collectionName).UpdateOne(ctx, qb.filter, bson.M{"$set": qb.update})
 	if err != nil {
-		return fmt.Errorf("error updating record: %w", err)
+		return nil, fmt.Errorf("error updating record: %w", err)
 	}
-	return nil
+
+	response := map[string]interface{}{
+		"acknowledged":  true,
+		"matchedCount":  result.MatchedCount,
+		"modifiedCount": result.ModifiedCount,
+	}
+	return response, nil
 }
 
-func (r *MongoRepository) InsertOne(ctx context.Context, collectionName string, document bson.M) error {
-	_, err := r.db.Collection(collectionName).InsertOne(ctx, document)
+func (r *MongoRepository) InsertOne(ctx context.Context, collectionName string, document bson.M) (map[string]interface{}, error) {
+	result, err := r.db.Collection(collectionName).InsertOne(ctx, document)
 	if err != nil {
-		return fmt.Errorf("error inserting record: %w", err)
+		return nil, fmt.Errorf("error inserting record: %w", err)
 	}
-	return nil
+
+	response := map[string]interface{}{
+		"acknowledged": true,
+		"insertedId":   result.InsertedID,
+	}
+
+	return response, nil
 }
 
-func (r *MongoRepository) DeleteOne(ctx context.Context, collectionName string, qb *MongoQueryBuilder) error {
-	_, err := r.db.Collection(collectionName).DeleteOne(ctx, qb.filter)
+func (r *MongoRepository) DeleteOne(ctx context.Context, collectionName string, qb *MongoQueryBuilder) (map[string]interface{}, error) {
+	result, err := r.db.Collection(collectionName).DeleteOne(ctx, qb.filter)
 	if err != nil {
-		return fmt.Errorf("error deleting record: %w", err)
+		return nil, fmt.Errorf("error deleting record: %w", err)
 	}
-	return nil
+
+	response := map[string]interface{}{
+		"acknowledged": true,
+		"deletedCount": result.DeletedCount,
+	}
+
+	return response, nil
 }

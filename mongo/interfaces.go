@@ -9,9 +9,9 @@ import (
 type IRepository interface {
 	FindOne(context.Context, string, *MongoQueryBuilder, interface{}) error
 	FindMany(context.Context, string, *MongoQueryBuilder, interface{}) (int, error)
-	UpdateOne(context.Context, string, *MongoQueryBuilder) error
-	InsertOne(context.Context, string, bson.M) error
-	DeleteOne(context.Context, string, *MongoQueryBuilder) error
+	UpdateOne(context.Context, string, *MongoQueryBuilder) (map[string]interface{}, error)
+	InsertOne(context.Context, string, bson.M) (map[string]interface{}, error)
+	DeleteOne(context.Context, string, *MongoQueryBuilder) (map[string]interface{}, error)
 
 	BeginTransaction(ctx context.Context) (IUnitOfWork, error)
 }

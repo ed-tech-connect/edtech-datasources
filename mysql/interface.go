@@ -8,11 +8,11 @@ import (
 type IRepository interface {
 	FindOne(context.Context, string, *QueryBuilder, interface{}) error
 	FindMany(context.Context, string, *QueryBuilder, interface{}) (int, error)
-	UpdateOne(context.Context, string, *QueryBuilder) error
-	UpdateMany(context.Context, string, *QueryBuilder) error
-	InsertOne(context.Context, string, *QueryBuilder) error
-	DeleteOne(context.Context, string, *QueryBuilder) error
-	DeleteMany(context.Context, string, *QueryBuilder) error
+	UpdateOne(context.Context, string, *QueryBuilder) (map[string]interface{}, error)
+	UpdateMany(context.Context, string, *QueryBuilder) (map[string]interface{}, error)
+	InsertOne(context.Context, string, *QueryBuilder) (map[string]interface{}, error)
+	DeleteOne(context.Context, string, *QueryBuilder) (map[string]interface{}, error)
+	DeleteMany(context.Context, string, *QueryBuilder) (map[string]interface{}, error)
 
 	BeginTransaction(ctx context.Context) (IUnitOfWork, error)
 }
